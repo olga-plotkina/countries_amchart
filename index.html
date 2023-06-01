@@ -14,18 +14,6 @@
 <!-- Chart code -->
 <script>
   am5.ready(function () {
-    /**
-     * ---------------------------------------
-     * This demo was created using amCharts 5.
-     *
-     * For more information visit:
-     * https://www.amcharts.com/
-     *
-     * Documentation is available at:
-     * https://www.amcharts.com/docs/v5/
-     * ---------------------------------------
-     */
-
     // Create root element
     // https://www.amcharts.com/docs/v5/getting-started/#Root_element
     var root = am5.Root.new("chartdiv");
@@ -46,29 +34,13 @@
       })
     );
 
-    // Generate random data
-    var date = new Date();
-    date.setHours(0, 0, 0, 0);
-    var value = 100;
+    // Add cursor
+    // https://www.amcharts.com/docs/v5/charts/xy-chart/cursor/
+    var cursor = chart.set("cursor", am5xy.XYCursor.new(root, {}));
+    cursor.lineY.set("visible", false);
 
-    function generateData() {
-      value = Math.round(Math.random() * 10 - 5 + value);
-      am5.time.add(date, "hour", 10);
-      return {
-        date: date.getTime(),
-        date1: date.getDate(),
-        value: value,
-      };
-    }
-
-    function generateDatas(count) {
-      var data = [];
-      for (var i = 0; i < count; ++i) {
-        data.push(generateData());
-      }
-      return data;
-    }
-
+    // Create axes
+    // https://www.amcharts.com/docs/v5/charts/xy-chart/axes/
     var xRenderer = am5xy.AxisRendererX.new(root, { minGridDistance: 30 });
     xRenderer.labels.template.setAll({
       rotation: -90,
@@ -77,55 +49,49 @@
       paddingRight: 15,
     });
 
-    // Create axes
-    // https://www.amcharts.com/docs/v5/charts/xy-chart/axes/
+    xRenderer.grid.template.setAll({
+      location: 1,
+    });
+
     var xAxis = chart.xAxes.push(
-      am5xy.GaplessDateAxis.new(root, {
-        maxDeviation: 0.2,
-        baseInterval: {
-          timeUnit: "millisecond",
-          count: 1,
-        },
-        tooltipDateFormat: "HH:mm MMM dd, yyyy",
-        gridIntervals: [{ timeUnit: "day", count: 1 }],
+      am5xy.CategoryAxis.new(root, {
+        maxDeviation: 0.3,
+        categoryField: "country",
         renderer: xRenderer,
         tooltip: am5.Tooltip.new(root, {}),
       })
     );
 
-    xRenderer.grid.template.set("location", 0.5);
-    xRenderer.labels.template.set("multiLocation", 0.5);
+    xAxis
+      .get("renderer")
+      .labels.template.adapters.add("text", function (text, target) {
+        return target.dataItem.dataContext.countyLabel;
+      });
 
     var yAxis = chart.yAxes.push(
       am5xy.ValueAxis.new(root, {
-        renderer: am5xy.AxisRendererY.new(root, {}),
+        maxDeviation: 0.3,
+        renderer: am5xy.AxisRendererY.new(root, {
+          strokeOpacity: 0.1,
+        }),
       })
     );
 
-    // Add series
+    // Create series
     // https://www.amcharts.com/docs/v5/charts/xy-chart/series/
     var series = chart.series.push(
       am5xy.ColumnSeries.new(root, {
-        name: "Series",
+        name: "Series 1",
         xAxis: xAxis,
         yAxis: yAxis,
         valueYField: "value",
-        valueXField: "date",
-        minBulletDistance: 30,
+        sequencedInterpolation: true,
+        categoryXField: "country",
         tooltip: am5.Tooltip.new(root, {
           labelText: "{valueY}",
         }),
       })
     );
-
-    series.bullets.push(function () {
-      return am5.Bullet.new(root, {
-        sprite: am5.Circle.new(root, {
-          radius: 3,
-          fill: series.get("fill"),
-        }),
-      });
-    });
 
     series.columns.template.setAll({
       cornerRadiusTL: 5,
@@ -140,38 +106,81 @@
       return chart.get("colors").getIndex(series.columns.indexOf(target));
     });
 
-    // Add cursor
-    // https://www.amcharts.com/docs/v5/charts/xy-chart/cursor/
-    var cursor = chart.set(
-      "cursor",
-      am5xy.XYCursor.new(root, {
-        behavior: "none",
-        xAxis: xAxis,
-        snapToSeries: [series],
-        snapToSeriesBy: "x",
-      })
-    );
-    cursor.lineY.set("visible", false);
-
-    // Add scrollbar
-    // https://www.amcharts.com/docs/v5/charts/xy-chart/scrollbars/
-    chart.set(
-      "scrollbarX",
-      am5.Scrollbar.new(root, {
-        orientation: "horizontal",
-      })
-    );
-
     // Set data
-    var data = generateDatas(10);
-    console.log(data);
+    var data = [
+      {
+        countryLabel: "USA",
+
+        country: "USA1",
+        value: 2025,
+      },
+      {
+        countryLabel: "China",
+        country: "China1",
+        value: 1882,
+      },
+      {
+        countryLabel: "Japan",
+        country: "Japan1",
+        value: 1809,
+      },
+      {
+        countryLabel: "Germany",
+        country: "Germany1",
+        value: 1322,
+      },
+      {
+        countryLabel: "UK",
+        country: "UK1",
+
+        value: 1122,
+      },
+      {
+        countryLabel: "France",
+
+        country: "France1",
+        value: 1114,
+      },
+      {
+        countryLabel: "Spain",
+
+        country: "Spain1",
+        value: 984,
+      },
+      {
+        countryLabel: "Spain",
+
+        country: "Spain2",
+        value: 711,
+      },
+      {
+        countryLabel: "Netherlands",
+
+        country: "Netherlands1",
+        value: 665,
+      },
+      {
+        countryLabel: "Netherlands",
+
+        country: "Netherlands2",
+        value: 443,
+      },
+      {
+        countryLabel: "Canada",
+
+        country: "Canada1",
+        value: 441,
+      },
+    ];
+
+    xAxis.data.setAll(data);
     series.data.setAll(data);
 
     // Make stuff animate on load
     // https://www.amcharts.com/docs/v5/concepts/animations/
     series.appear(1000);
     chart.appear(1000, 100);
-  });
+  }); // end am5.ready()
 </script>
 
 <!-- HTML -->
